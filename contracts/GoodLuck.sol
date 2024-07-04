@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import { IGoodLuck } from "./interfaces/IGoodLuck.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { Errors } from "./lib/Errors.sol";
 
 contract GoodLuck is IGoodLuck {
     
@@ -14,13 +15,13 @@ contract GoodLuck is IGoodLuck {
     address internal _usdt;
 
     constructor(address usdt_, uint256 timeLimit_) {
-        require(usdt_ != address(0), "Unset USDT address");
+        if (usdt_ == address(0)) revert Errors.UnSetUSDTAddress();
         _usdt = usdt_;
         _timeLimit = timeLimit_;
     }
 
     function createGame(uint256 amount, bytes32 bankerHash) external {
-        require(amount > 0, "USDT must be greater than 0");
+        if (amount == 0) revert Errors.USDTAmountTooSmall();
 
         _games[_gameId] = Game({
             _banker: msg.sender,
@@ -38,7 +39,7 @@ contract GoodLuck is IGoodLuck {
 
     function joinGame(uint256 gameId, Choice palyerChoice) external {
         Game memory game = _games[gameId];
-        require(game._player == address(0), "Game already has a player");
+        if (game._player != address(0)) revert Errors.GameAlreadyHasPlayer();
 
         game._player = msg.sender;
         game._playerChoice = palyerChoice;
@@ -48,10 +49,10 @@ contract GoodLuck is IGoodLuck {
 
     function execute(uint256 gameId, Choice bankerChoice, string memory salt) external {
         Game storage game = _games[gameId];
-        require(msg.sender == game._banker, "Only banker can execute");
-        require(!game._isSettled, "Game already settled");
-        require(block.timestamp <= game._deadline, "Execute period expired");
-        require(keccak256(abi.encodePacked(bankerChoice, salt)) == game._bankerHash, "Invalid execute");
+        if (msg.sender != game._banker) revert Errors.OnlyBankerCanExecute();
+        if (game._isSettled) revert Errors.GameAlreadySettled();
+        if(block.timestamp > game._deadline) revert Errors.ExecutePeriodExpired();
+        if (keccak256(abi.encodePacked(bankerChoice, salt)) != game._bankerHash) revert Errors.InvalidExecute();
 
         game._bankerChoice = bankerChoice;
         _settleGame(game);
@@ -59,11 +60,19 @@ contract GoodLuck is IGoodLuck {
 
     function settle(uint256 gameId) external {
         Game storage game = _games[gameId];
-        require(!game._isSettled, "Game already settled");
-        require(block.timestamp > game._deadline, "Execute period not expired");
+        if (game._isSettled) revert Errors.GameAlreadySettled();
+        if (block.timestamp <= game._deadline) revert Errors.ExecutePeriodNotExpired();
 
         // game._bankerChoice = Choice.None; 
         _settleGame(game);
+    }
+
+    function getGameData(uint256 gameId) external view returns(Game memory) {
+        return _games[gameId];
+    }
+
+    function getCurrentGameId() external view returns(uint256) {
+        return _gameId;
     }
 
     function _settleGame(Game storage game) internal {
