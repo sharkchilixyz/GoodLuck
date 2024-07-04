@@ -1,0 +1,11 @@
+node_modules
+artifacts
+cache
+coverage
+.DS_Store
+src
+deployments
+
+.env
+coverage.json
+gas-reporter.txt

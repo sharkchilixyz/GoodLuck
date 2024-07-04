@@ -1,0 +1,28 @@
+{  
+  "arrowParens": "always",
+  "singleQuote": false,
+  "bracketSpacing": true,
+  "trailingComma": "all",
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "printWidth": 120,
+        "tabWidth": 4,
+        "semi": true,
+        "useTabs": false,
+        "singleQuote": false,
+        "quotes": ["error", "always"],
+        "bracketSpacing": true,
+        "explicitTypes": "always"
+      }
+    },
+    {
+      "files": "*.ts",
+      "options": {
+        "printWidth": 240
+      }
+    }
+  ]  
+}
