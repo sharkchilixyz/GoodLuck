@@ -29,11 +29,11 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ["test", "local"]
     },
-    bsctest: {
+    sepolia: {
       live: true,
       saveDeployments: true,
-      tags: ["bsctest"],
-      url: process.env.BSCTEST_URL || "",
+      tags: ["sepolia"],
+      url: "",
       accounts: process.env.PRIVATE_KEY1 !== undefined ? [process.env.PRIVATE_KEY1] : [],
     },
   },

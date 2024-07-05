@@ -38,7 +38,7 @@ contract GoodLuck is IGoodLuck {
     }
 
     function joinGame(uint256 gameId, Choice palyerChoice) external {
-        Game memory game = _games[gameId];
+        Game storage game = _games[gameId];
         if (game._player != address(0)) revert Errors.GameAlreadyHasPlayer();
 
         game._player = msg.sender;
@@ -67,6 +67,10 @@ contract GoodLuck is IGoodLuck {
         _settleGame(game);
     }
 
+    function setTimeLimit(uint256 timeLimit) external {
+        _timeLimit = timeLimit;
+    }
+
     function getGameData(uint256 gameId) external view returns(Game memory) {
         return _games[gameId];
     }
@@ -75,26 +79,30 @@ contract GoodLuck is IGoodLuck {
         return _gameId;
     }
 
+    function getTimeLimit() external view returns(uint256) {
+        return _timeLimit;
+    }
+
     function _settleGame(Game storage game) internal {
         game._isSettled = true;
 
         if (game._bankerChoice == Choice.None) {
             // banker did not reveal in time, player wins by default
-            IERC20(_usdt).transferFrom(address(this), game._player, 2 * game._amount);
+            IERC20(_usdt).transfer(game._player, 2 * game._amount);
         } else if ((game._bankerChoice == Choice.Rock && game._playerChoice == Choice.Scissors) ||
                    (game._bankerChoice == Choice.Paper && game._playerChoice == Choice.Rock) ||
                    (game._bankerChoice == Choice.Scissors && game._playerChoice == Choice.Paper)) {
             // banker wins
-            IERC20(_usdt).transferFrom(address(this), game._banker, 2 * game._amount);
+            IERC20(_usdt).transfer(game._banker, 2 * game._amount);
         } else if ((game._playerChoice == Choice.Rock && game._bankerChoice == Choice.Scissors) ||
                    (game._playerChoice == Choice.Paper && game._bankerChoice == Choice.Rock) ||
                    (game._playerChoice == Choice.Scissors && game._bankerChoice == Choice.Paper)) {
             // Player wins
-            IERC20(_usdt).transferFrom(address(this), game._player, 2 * game._amount);
+            IERC20(_usdt).transfer(game._player, 2 * game._amount);
         } else {
             // Tie, refund both
-            IERC20(_usdt).transferFrom(address(this), game._banker, game._amount);
-            IERC20(_usdt).transferFrom(address(this), game._player, game._amount);
+            IERC20(_usdt).transfer(game._banker, game._amount);
+            IERC20(_usdt).transfer(game._player, game._amount);
         }
     }
 }
