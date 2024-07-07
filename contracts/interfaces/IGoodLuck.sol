@@ -12,21 +12,20 @@ interface IGoodLuck {
     struct Game {
         address _banker;
         address _player;
+        uint256 _deadline;
         uint256 _amount;
         bytes32 _bankerHash;
         Choice _bankerChoice;
         Choice _playerChoice;
-        uint256 _deadline;
         bool _isSettled;
+        uint8 _result;// 0 is banker win, 1 is player win, 2 is tie
     }
 
-    event CreateGame(uint256 amount, bytes32 bankerHash);
+    event CreateGame(address banker, uint256 gameId, Game game);
 
-    event JoinGame(uint256 gameId, Choice palyerChoice);
+    event JoinGame(address player, uint256 gameId, Game game);
 
-    event Execute(uint256 gameId, Choice bankerChoice, string salt);
-
-    event Settle(uint256 gameId);
+    event SettleGame(address executor, uint256 gameId, Game game);
 
     function createGame(uint256 amount, bytes32 bankerHash) external;
 

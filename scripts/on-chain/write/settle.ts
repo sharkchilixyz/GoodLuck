@@ -3,9 +3,9 @@ import { ethers } from "hardhat";
 
 async function main() {
 
-    const { deployer, MockUSDT, GoodLuck} = await setupCommonEnv();
+    const { deployer, player, MockUSDT, GoodLuck} = await setupCommonEnv();
 
-    await deployer.GoodLuck.settle(0).then((tx: { wait: () => void; }) => { 
+    await player.GoodLuck.settle(3).then((tx: { wait: () => void; }) => { 
         tx.wait();
         console.log("banker settle game:",tx);
     });

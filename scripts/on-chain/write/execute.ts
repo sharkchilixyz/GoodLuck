@@ -5,7 +5,7 @@ async function main() {
 
     const { deployer, MockUSDT, GoodLuck} = await setupCommonEnv();
 
-    await deployer.GoodLuck.execute(0, 2, "good").then((tx: { wait: () => void; }) => { 
+    await deployer.GoodLuck.execute(3, 2, "good").then((tx: { wait: () => void; }) => { 
         tx.wait();
         console.log("banker execute game:",tx);
     });

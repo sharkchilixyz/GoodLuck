@@ -34,12 +34,12 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ["sepolia"],
       url: "",
-      accounts: process.env.PRIVATE_KEY1 !== undefined ? [process.env.PRIVATE_KEY1] : [],
+      accounts: [process.env.PRIVATE_KEY1, process.env.PRIVATE_KEY2].filter((key) => key !== undefined),
     },
   },
   namedAccounts: {
     deployer: 0,
-    tokenOwner: 1,
+    player: 1,
   },
   paths: {
     sources: "contracts",

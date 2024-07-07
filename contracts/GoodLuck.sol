@@ -31,10 +31,12 @@ contract GoodLuck is IGoodLuck {
             _bankerChoice: Choice.None,
             _playerChoice: Choice.None,
             _deadline: 0,
-            _isSettled: false
+            _isSettled: false,
+            _result: 0
         });
         _gameId++;
         IERC20(_usdt).transferFrom(msg.sender, address(this), amount);
+        emit CreateGame(msg.sender, _gameId - 1, _games[_gameId -1]);
     }
 
     function joinGame(uint256 gameId, Choice palyerChoice) external {
@@ -45,6 +47,7 @@ contract GoodLuck is IGoodLuck {
         game._playerChoice = palyerChoice;
         game._deadline = block.timestamp + _timeLimit;
         IERC20(_usdt).transferFrom(msg.sender, address(this), game._amount);
+        emit JoinGame(msg.sender, gameId,game);
     }
 
     function execute(uint256 gameId, Choice bankerChoice, string memory salt) external {
@@ -55,7 +58,7 @@ contract GoodLuck is IGoodLuck {
         if (keccak256(abi.encodePacked(bankerChoice, salt)) != game._bankerHash) revert Errors.InvalidExecute();
 
         game._bankerChoice = bankerChoice;
-        _settleGame(game);
+        _settleGame(gameId, game);
     }
 
     function settle(uint256 gameId) external {
@@ -64,7 +67,7 @@ contract GoodLuck is IGoodLuck {
         if (block.timestamp <= game._deadline) revert Errors.ExecutePeriodNotExpired();
 
         // game._bankerChoice = Choice.None; 
-        _settleGame(game);
+        _settleGame(gameId, game);
     }
 
     function setTimeLimit(uint256 timeLimit) external {
@@ -83,26 +86,31 @@ contract GoodLuck is IGoodLuck {
         return _timeLimit;
     }
 
-    function _settleGame(Game storage game) internal {
+    function _settleGame(uint256 gameId, Game storage game) internal {
         game._isSettled = true;
 
         if (game._bankerChoice == Choice.None) {
-            // banker did not reveal in time, player wins by default
+            // banker did not execute in time, player wins by default
+            game._result = 1;
             IERC20(_usdt).transfer(game._player, 2 * game._amount);
         } else if ((game._bankerChoice == Choice.Rock && game._playerChoice == Choice.Scissors) ||
                    (game._bankerChoice == Choice.Paper && game._playerChoice == Choice.Rock) ||
                    (game._bankerChoice == Choice.Scissors && game._playerChoice == Choice.Paper)) {
             // banker wins
+            game._result = 0;
             IERC20(_usdt).transfer(game._banker, 2 * game._amount);
         } else if ((game._playerChoice == Choice.Rock && game._bankerChoice == Choice.Scissors) ||
                    (game._playerChoice == Choice.Paper && game._bankerChoice == Choice.Rock) ||
                    (game._playerChoice == Choice.Scissors && game._bankerChoice == Choice.Paper)) {
             // Player wins
+            game._result = 1;
             IERC20(_usdt).transfer(game._player, 2 * game._amount);
         } else {
             // Tie, refund both
+            game._result = 2;
             IERC20(_usdt).transfer(game._banker, game._amount);
             IERC20(_usdt).transfer(game._player, game._amount);
         }
+        emit SettleGame(msg.sender, gameId, game);
     }
 }

@@ -9,7 +9,7 @@ async function main() {
         tx.wait();
         console.log("palyer mint MockUSDT:",tx);
     });
-    await deployer.MockUSDT.mint(player.address, BigInt("100000000000000000000")).then((tx: { wait: () => void; }) => { 
+    await deployer.MockUSDT.mint(deployer.address, BigInt("100000000000000000000")).then((tx: { wait: () => void; }) => { 
         tx.wait();
         console.log("deployer mint MockUSDT:",tx);
     });
@@ -21,8 +21,6 @@ async function main() {
         tx.wait();
         console.log("deployer approve MockUSDT:",tx);
     });
-    
-
 }
 
 main();
